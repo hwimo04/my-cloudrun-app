@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>FolioLogic (합격로그) - AI 포트폴리오 로직 분석</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&family=Manrope:wght@400..800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#0f172a",
+            secondary: "#4f46e5",
+            "secondary-container": "#6366f1",
+            "tertiary": "#10b981",
+            "tertiary-fixed": "#d1fae5",
+            "on-tertiary-fixed": "#065f46",
+            surface: "#f8f9ff",
+            "surface-low": "#eff4ff",
+            "surface-lowest": "#ffffff",
+            "surface-high": "#e2e8f0"
+          },
+          fontFamily: {
+            sans: ["Hanken Grotesk", "sans-serif"],
+            headline: ["Manrope", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      overflow-x: hidden;
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+  </style>
+</head>
+<body class="bg-surface text-slate-900 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+
+  <!-- ================================================= -->
+  <!-- 1. 상단 글로벌 헤더 -->
+  <!-- ================================================= -->
+  <header class="fixed top-0 w-full z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/80">
+    <div class="h-14 px-4 max-w-lg mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('home')">
+        <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-headline font-extrabold text-sm shadow-sm">
+          F
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-headline font-bold text-slate-900 text-base tracking-tight">FolioLogic</span>
+          <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold tracking-wide">합격로그</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <a href="?page=admin" class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-indigo-600 rounded-md hover:bg-slate-100 transition flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+          관리자
+        </a>
+        <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+          MY
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================================================= -->
+  <!-- 2. 메인 뷰 컨테이너 (SPA 라우팅) -->
+  <!-- ================================================= -->
+  <main class="flex-1 w-full max-w-lg mx-auto pt-14 pb-20">
+
+    <!-- ================= VIEW 1: 메인 홈 ================= -->
+    <section id="view-home" class="flex flex-col gap-4">
+      
+      <!-- 공채 현황 라이브 티커 -->
+      <div class="px-4 pt-3">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-indigo-600 animate-ping"></span>
+          <span>🔥 2024 상반기 신입 공채 최종 합격작 1,420개 분석 완료</span>
+        </div>
+      </div>
+
+      <!-- 히어로 섹션 -->
+      <div class="px-4 flex flex-col gap-2">
+        <h1 class="font-headline font-extrabold text-2xl text-slate-900 tracking-tight leading-snug">
+          디자인 감상을 넘어,<br/>
+          <span class="bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">합격자의 기획 논리</span>를 해부하다
+        </h1>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          단순한 비주얼이 아닌, 문제 정의부터 지표 검증까지 채용관의 시선을 사로잡은 진짜 합격 논리 장표를 분석합니다.
+        </p>
+
+        <!-- 30초 매칭 CTA 버튼 -->
+        <button onclick="openMatchingModal()" class="mt-2 w-full py-3.5 px-4 rounded-xl bg-indigo-600 text-white font-headline font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition">
+          <span class="material-symbols-outlined text-emerald-300 text-[18px]">auto_awesome</span>
+          <span>30초 만에 내 맞춤 합격작 찾기</span>
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+
+        <!-- 핵심 성과 지표 미니 바 -->
+        <div class="mt-2 p-3 rounded-xl bg-slate-100 flex items-center justify-between text-center border border-slate-200/60">
+          <div class="flex-1">
+            <p class="font-bold text-indigo-600 text-xs">18,500+장</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">분석 장표</p>
+          </div>
+          <div class="w-px h-5 bg-slate-200"></div>
+          <div class="flex-1">
+            <p class="font-bold text-slate-900 text-xs">3.4배 ↑</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">서류 통과율</p>
+          </div>
+          <div class="w-px h-5 bg-slate-200"></div>
+          <div class="flex-1">
+            <p class="font-bold text-emerald-600 text-xs">100%</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">로직 검증</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 수평 스크롤 직무 필터 칩 -->
+      <div class="w-full">
+        <div class="flex items-center gap-2 overflow-x-auto px-4 no-scrollbar py-1 text-xs font-semibold">
+          <button onclick="filterPortfolios('전체', this)" class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-indigo-600 text-white shadow-sm">
+            전체
+          </button>
+          <button onclick="filterPortfolios('서비스 기획', this)" class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+            서비스 기획/PM
+          </button>
+          <button onclick="filterPortfolios('프론트엔드', this)" class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+            프론트엔드
+          </button>
+          <button onclick="filterPortfolios('디자이너', this)" class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+            UI/UX
+          </button>
+          <button onclick="filterPortfolios('비전공', this)" class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+            비전공/문과
+          </button>
+        </div>
+      </div>
+
+      <!-- 포트폴리오 카드 리스트 -->
+      <div class="px-4 flex flex-col gap-3.5 pt-1">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span class="font-bold text-slate-800 text-sm">실시간 인기 합격 로직</span>
+          <span>정확도순 정렬</span>
+        </div>
+
+        <div id="portfolio-list" class="flex flex-col gap-3.5">
+          <!-- 로딩 스켈레톤 -->
+          <div class="p-6 text-center text-slate-400 text-xs animate-pulse">
+            포트폴리오 목록을 불러오는 중...
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 2: 포트폴리오 로직 분석 뷰어 ================= -->
+    <section id="view-viewer" class="hidden flex flex-col">
+      <!-- 상세 뷰어 상단 바 -->
+      <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between sticky top-14 z-30">
+        <button onclick="switchView('home')" class="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900">
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          목록으로
+        </button>
+        <span id="viewer-header-title" class="font-bold text-xs text-slate-800 truncate max-w-[200px]">
+          합격 포트폴리오 분석
+        </span>
+        <button onclick="toggleBookmark()" class="text-slate-500 hover:text-indigo-600">
+          <span class="material-symbols-outlined text-[20px]">bookmark</span>
+        </button>
+      </div>
+
+      <!-- 작성자 메타데이터 서브바 -->
+      <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200/80 flex flex-col gap-1">
+        <div class="flex items-center justify-between">
+          <h2 id="viewer-doc-title" class="font-headline font-bold text-sm text-slate-900 truncate">
+            비전공 문과의 토스 신입 PM 합격작
+          </h2>
+          <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+            PM 트랙 1위
+          </span>
+        </div>
+        <p id="viewer-applicant-meta" class="text-[11px] text-slate-500">
+          김지원 님 • 경영학과 / 비전공 / 24 상반기 최종합격
+        </p>
+      </div>
+
+      <!-- 슬라이드 컨트롤 매트릭스 -->
+      <div class="px-4 pt-3 flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <span id="page-counter-badge" class="px-2 py-0.5 rounded bg-slate-900 text-white font-mono text-xs font-bold">
+            03 / 12
+          </span>
+          <div class="flex items-center bg-slate-200 rounded-lg p-0.5">
+            <button onclick="navigatePage(-1)" class="w-6 h-6 flex items-center justify-center text-slate-700 hover:bg-white rounded">
+              <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+            </button>
+            <button onclick="navigatePage(1)" class="w-6 h-6 flex items-center justify-center text-slate-700 hover:bg-white rounded">
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 로직 하이라이트 토글 버튼 -->
+        <button id="btn-logic-toggle" onclick="toggleLogicHighlight()" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold active:scale-95 transition">
+          <span class="material-symbols-outlined text-[15px]">magic_button</span>
+          <span>로직 하이라이트 ON</span>
+        </button>
+      </div>
+
+      <!-- 메인 슬라이드 시뮬레이션 캔버스 -->
+      <div class="px-4 pt-2">
+        <div class="relative w-full aspect-[4/3] bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden flex flex-col justify-between p-3.5 select-none">
+          <div class="flex items-start justify-between border-b border-slate-100 pb-1.5">
+            <div class="flex flex-col">
+              <span id="slide-stage-category" class="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Funnel Analysis</span>
+              <h3 id="slide-stage-title" class="font-headline font-bold text-xs text-slate-900 mt-0.5">
+                03. 초기 진입 장벽 분석: 결제 전환 퍼널 내 68% 이탈 지점 발굴
+              </h3>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">FolioLogic Case</span>
+          </div>
+
+          <!-- 인터랙티브 퍼널 그래픽 시뮬레이션 -->
+          <div class="grid grid-cols-3 gap-1.5 my-auto" id="slide-graphics-container">
+            <div class="p-2 rounded-lg bg-slate-50 flex flex-col gap-1 border border-slate-100">
+              <span class="text-[10px] text-slate-500">A. 카트 담기</span>
+              <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-indigo-600 h-full w-full"></div>
+              </div>
+              <span class="text-[9px] font-bold text-slate-700">100% (14,200건)</span>
+            </div>
+
+            <div id="target-highlight-box1" class="relative p-2 rounded-lg bg-indigo-50/60 border border-indigo-200 flex flex-col gap-1 transition-all">
+              <span class="absolute -top-2 -right-1 px-1.5 py-0.2 rounded-full bg-indigo-600 text-white text-[8px] font-bold">
+                병목 68%
+              </span>
+              <span class="text-[10px] font-bold text-indigo-700">B. 본인 인증</span>
+              <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-rose-500 h-full w-[32%]"></div>
+              </div>
+              <span class="text-[9px] font-bold text-rose-600">32% 이탈 심각</span>
+            </div>
+
+            <div id="target-highlight-box2" class="p-2 rounded-lg bg-slate-50 flex flex-col gap-1 border border-slate-100 transition-all">
+              <span class="text-[10px] text-slate-500">C. 최종 결제</span>
+              <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-emerald-500 h-full w-[53%]"></div>
+              </div>
+              <span class="text-[9px] font-bold text-emerald-700">17.2% 전환</span>
+            </div>
+          </div>
+
+          <!-- 슬라이드 푸터 -->
+          <div class="flex items-center justify-between text-[9px] text-slate-400 border-t border-slate-100 pt-1">
+            <span>Target: Toss Payments App SDK</span>
+            <span>Confidential Portfolio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 바텀 시트 (AI 로직 심층 분석) -->
+      <div class="px-4 pt-3 flex flex-col gap-2">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div onclick="toggleSheet()" class="p-3 bg-slate-50/80 flex items-center justify-between cursor-pointer border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px]">psychology</span>
+              </div>
+              <div>
+                <h4 class="font-headline font-bold text-xs text-slate-900">AI 로직 심층 분석 (3대 통찰)</h4>
+                <p class="text-[10px] text-slate-500">채용 평가관이 매료된 핵심 합격 설계점</p>
+              </div>
+            </div>
+            <span id="sheet-arrow" class="material-symbols-outlined text-slate-400 transition-transform">expand_less</span>
+          </div>
+
+          <div id="sheet-content" class="p-3 flex flex-col gap-2.5">
+            <!-- 통찰 1 -->
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-indigo-600">Insight 01. 문제 정의 논리</span>
+                <span class="text-[9px] font-mono text-slate-400">데이터 사고력</span>
+              </div>
+              <p id="insight-problem" class="text-xs text-slate-700 leading-relaxed">
+                단순 스크린샷 나열을 지양하고 정량적 메트릭 퍼널(Metric Funnel) 데이터를 선행 제시하여 문제의 심각성을 객관적으로 증명했습니다.
+              </p>
+            </div>
+
+            <!-- 통찰 2 -->
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-slate-800">Insight 02. 기획 프레임워크</span>
+                <span class="text-[9px] font-mono text-slate-400">근본 원인 분해</span>
+              </div>
+              <p id="insight-method" class="text-xs text-slate-700 leading-relaxed">
+                Double Diamond와 5 Whys 기법을 결합하여 표면적 UI 불만이 아닌 백엔드 인증 지연 문제를 도출한 사고의 깊이를 증명했습니다.
+              </p>
+            </div>
+
+            <!-- 통찰 3 -->
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-emerald-700">Insight 03. 핵심 성과 지표</span>
+                <span class="text-[9px] font-mono text-slate-400">비즈니스 임팩트</span>
+              </div>
+              <p id="insight-outcome" class="text-xs text-slate-700 leading-relaxed">
+                A/B 테스트 배포 후 전환율 14.8% 개선 논리를 가설-실험-결과의 3단계 구조로 명료하게 증명했습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 하단 플로팅 챗봇 연결 CTA -->
+        <button onclick="openChatFromCurrentPage()" class="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-headline font-bold text-xs flex items-center justify-between shadow-lg active:scale-[0.98] transition">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400 text-[18px]">forum</span>
+            <span>AI 멘토에게 이 장표 질문하기</span>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px]">
+            실시간 질의응답 &gt;
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 3: 포트폴리오 전용 AI 멘토 대화방 ================= -->
+    <section id="view-chat" class="hidden flex flex-col">
+      <!-- 챗봇 상단 헤더 -->
+      <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between sticky top-14 z-30">
+        <button onclick="switchView('viewer')" class="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900">
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          장표 뷰어
+        </button>
+        <span class="font-bold text-xs text-slate-800">
+          포트폴리오 전문 AI 멘토
+        </span>
+        <button onclick="resetChatHistory()" class="text-xs text-slate-500 hover:text-rose-600 flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+          초기화
+        </button>
+      </div>
+
+      <!-- 동기화 장표 컨텍스트 뱃지 -->
+      <div class="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between">
+        <div class="flex items-center gap-1.5 text-xs text-indigo-900 truncate">
+          <span class="material-symbols-outlined text-indigo-600 text-[16px]">layers</span>
+          <span id="chat-active-page-label" class="font-bold truncate">동기화 장표: Page 03 (토스 PM)</span>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold">동기화됨</span>
+      </div>
+
+      <!-- 대화 스트림 영역 -->
+      <div id="chat-stream" class="px-4 py-3 flex flex-col gap-3 min-h-[350px]">
+        <!-- AI 기본 환영 메시지 -->
+        <div class="flex items-start gap-2 max-w-[90%]">
+          <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+            AI
+          </div>
+          <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm text-xs text-slate-800 leading-relaxed">
+            안녕하세요! 현재 열람 중인 포트폴리오의 기획 의도, 문제 정의 방식, 사용된 프레임워크 등에 대해 무엇이든 질문해 주세요.
+          </div>
+        </div>
+      </div>
+
+      <!-- 추천 질문 빠른 칩 -->
+      <div class="px-4 pt-1 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar">
+        <button onclick="sendQuickPrompt('이 장표에서 문제 정의를 어떻게 했나요?')" class="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] hover:bg-slate-200 transition">
+          💡 문제 정의 방식 질문
+        </button>
+        <button onclick="sendQuickPrompt('면접관이 질문할 만한 예상 질문 2개 뽑아줘')" class="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] hover:bg-slate-200 transition">
+          🎯 면접 예상 질문
+        </button>
+        <button onclick="sendQuickPrompt('A/B 테스트 대신 왜 정성 인터뷰를 했나요?')" class="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] hover:bg-slate-200 transition">
+          📊 검증 방법론 질문
+        </button>
+      </div>
+
+      <!-- 하단 입력 독 -->
+      <div class="px-4 pt-1">
+        <form onsubmit="handleChatSubmit(event)" class="flex items-center gap-1.5 bg-white border border-slate-300 rounded-xl p-1.5 shadow-sm focus-within:border-indigo-600 transition">
+          <input id="chat-input" type="text" placeholder="포트폴리오에 대해 궁금한 점을 입력하세요..." class="flex-1 px-2 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"/>
+          <button type="submit" id="btn-chat-send" class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center active:scale-95 transition">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================================= -->
+  <!-- 3. 모바일 하단 고정 탭 바 -->
+  <!-- ================================================= -->
+  <nav class="fixed bottom-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 pb-safe">
+    <div class="flex justify-around items-center h-14 max-w-lg mx-auto">
+      <button onclick="switchView('home')" id="tab-home" class="nav-tab flex flex-col items-center justify-center w-12 text-indigo-600 font-bold">
+        <span class="material-symbols-outlined text-[20px]">home</span>
+        <span class="text-[10px] mt-0.5">홈</span>
+      </button>
+      <button onclick="switchView('home')" id="tab-explore" class="nav-tab flex flex-col items-center justify-center w-12 text-slate-400 hover:text-slate-700">
+        <span class="material-symbols-outlined text-[20px]">explore</span>
+        <span class="text-[10px] mt-0.5">탐색</span>
+      </button>
+      <button onclick="switchView('viewer')" id="tab-analysis" class="nav-tab flex flex-col items-center justify-center w-12 text-slate-400 hover:text-slate-700">
+        <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+        <span class="text-[10px] mt-0.5">로직분석</span>
+      </button>
+      <button onclick="switchView('chat')" id="tab-mentor" class="nav-tab flex flex-col items-center justify-center w-12 text-slate-400 hover:text-slate-700">
+        <span class="material-symbols-outlined text-[20px]">forum</span>
+        <span class="text-[10px] mt-0.5">AI멘토</span>
+      </button>
+      <a href="?page=admin" class="nav-tab flex flex-col items-center justify-center w-12 text-slate-400 hover:text-slate-700">
+        <span class="material-symbols-outlined text-[20px]">shield_person</span>
+        <span class="text-[10px] mt-0.5">관리자</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ================================================= -->
+  <!-- 4. [모달] 30초 AI 맞춤 합격작 매칭 모달 -->
+  <!-- ================================================= -->
+  <div id="modal-matching" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-1.5 text-indigo-600">
+            <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+            <h3 class="font-headline font-bold text-base text-slate-900">30초 AI 맞춤 합격작 매칭</h3>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-0.5">나와 가장 유사한 합격 스펙을 3초 만에 찾아드립니다.</p>
+        </div>
+        <button onclick="closeMatchingModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <!-- 3-Step 라디오 선택 폼 -->
+      <div class="flex flex-col gap-3 text-xs">
+        <!-- Step 1 -->
+        <div class="flex flex-col gap-1">
+          <label class="font-bold text-slate-700">1. 희망 직무</label>
+          <div class="grid grid-cols-3 gap-1.5" id="match-job-group">
+            <button type="button" onclick="selectOption('job', '서비스 기획', this)" class="opt-btn py-2 rounded-lg bg-indigo-600 text-white font-bold">PM/기획</button>
+            <button type="button" onclick="selectOption('job', '프론트엔드', this)" class="opt-btn py-2 rounded-lg bg-slate-100 text-slate-600">프론트엔드</button>
+            <button type="button" onclick="selectOption('job', '디자이너', this)" class="opt-btn py-2 rounded-lg bg-slate-100 text-slate-600">UI/UX</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex flex-col gap-1">
+          <label class="font-bold text-slate-700">2. 출신 배경</label>
+          <div class="grid grid-cols-3 gap-1.5" id="match-bg-group">
+            <button type="button" onclick="selectOption('bg', '비전공', this)" class="opt-btn py-2 rounded-lg bg-indigo-600 text-white font-bold">비전공/문과</button>
+            <button type="button" onclick="selectOption('bg', '전공', this)" class="opt-btn py-2 rounded-lg bg-slate-100 text-slate-600">관련 전공</button>
+            <button type="button" onclick="selectOption('bg', '부트캠프', this)" class="opt-btn py-2 rounded-lg bg-slate-100 text-slate-600">부트캠프</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex flex-col gap-1">
+          <label class="font-bold text-slate-700">3. 보유 프로젝트 수</label>
+          <div class="grid grid-cols-3 gap-1.5" id="match-proj-group">
+            <button type="button" onclick="selectOption('proj', '0', this)" class="opt-btn py-2 rounded-lg bg-slate-100 text-slate-600">0개 (준비중)</button>
+            <button type="button" onclick="selectOption('proj', '1', this)" class="opt-btn py-2 rounded-lg bg-slate-100 text-slate-600">1개</button>
+            <button type="button" onclick="selectOption('proj', '2', this)" class="opt-btn py-2 rounded-lg bg-indigo-600 text-white font-bold">2개 이상</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 추천받기 버튼 -->
+      <button id="btn-submit-match" onclick="executeMatching()" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-headline font-bold text-xs flex items-center justify-center gap-1 shadow-md active:scale-95 transition">
+        <span>나와 가장 유사한 합격작 3개 추천받기</span>
+        <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- 5. 프론트엔드 인터랙션 & GAS 연동 자바스크립트 -->
+  <!-- ================================================= -->
+  <script>
+    // 상태 관리
+    let currentView = 'home';
+    let portfoliosCache = [];
+    let currentPortfolioId = 'toss-pm-01';
+    let currentPortfolioDetail = null;
+    let currentPageIndex = 0;
+    let isHighlightActive = true;
+    let isSheetOpen = true;
+
+    // 매칭 모달 선택 상태
+    let matchSelection = {
+      job: '서비스 기획',
+      bg: '비전공',
+      proj: '2'
+    };
+
+    // 로컬 Mock 데이터 (GAS 외부 테스트용)
+    const fallbackPortfolios = [
+      {
+        id: 'toss-pm-01',
+        title: '비전공 문과의 토스 신입 PM 최종 합격 포트폴리오',
+        applicant_name: '김지원',
+        applicant_background: '비전공 문과 • 토스 합격',
+        job_category: '서비스 기획 / PM',
+        page_count: 12,
+        view_count: 14200,
+        bookmark_count: 2341,
+        match_rate: 98
+      },
+      {
+        id: 'daangn-uiux-01',
+        title: '동네생활 커뮤니티 리텐션 32% 개선 UI/UX 케이스 스터디',
+        applicant_name: '박준영',
+        applicant_background: '부트캠프 수료 • 당근 합격',
+        job_category: '프로덕트 디자이너 (UI/UX)',
+        page_count: 10,
+        view_count: 11800,
+        bookmark_count: 1890,
+        match_rate: 95
+      },
+      {
+        id: 'naver-fe-01',
+        title: '대규모 트래픽 렌더링 최적화 & 디자인 시스템 구축기',
+        applicant_name: '이지훈',
+        applicant_background: '컴공 전공 • 네이버 합격',
+        job_category: '프론트엔드 개발',
+        page_count: 14,
+        view_count: 9400,
+        bookmark_count: 1420,
+        match_rate: 92
+      }
+    ];
+
+    // ================= 뷰 전환 =================
+    function switchView(viewName) {
+      currentView = viewName;
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-viewer').classList.add('hidden');
+      document.getElementById('view-chat').classList.add('hidden');
+
+      // 탭 활성화 상태
+      document.querySelectorAll('.nav-tab').forEach(t => {
+        t.classList.remove('text-indigo-600', 'font-bold');
+        t.classList.add('text-slate-400');
+      });
+
+      if (viewName === 'home') {
+        document.getElementById('view-home').classList.remove('hidden');
+        document.getElementById('tab-home').classList.add('text-indigo-600', 'font-bold');
+      } else if (viewName === 'viewer') {
+        document.getElementById('view-viewer').classList.remove('hidden');
+        document.getElementById('tab-analysis').classList.add('text-indigo-600', 'font-bold');
+        if (!currentPortfolioDetail) {
+          loadPortfolioDetail(currentPortfolioId);
+        }
+      } else if (viewName === 'chat') {
+        document.getElementById('view-chat').classList.remove('hidden');
+        document.getElementById('tab-mentor').classList.add('text-indigo-600', 'font-bold');
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    // ================= 포트폴리오 로드 및 렌더링 =================
+    function initPortfolios() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderPortfolios)
+          .withFailureHandler(() => renderPortfolios(fallbackPortfolios))
+          .getPortfolios();
+      } else {
+        renderPortfolios(fallbackPortfolios);
+      }
+    }
+
+    function renderPortfolios(list) {
+      portfoliosCache = list || [];
+      const container = document.getElementById('portfolio-list');
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs">등록된 포트폴리오가 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <article onclick="openPortfolio('${item.id}')" class="bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition overflow-hidden cursor-pointer">
+          <div class="p-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                합격 로직 분석 ${item.page_count}장 포함
+              </span>
+              <span class="font-mono text-xs font-bold text-indigo-600">매칭률 ${item.match_rate}%</span>
+            </div>
+            <h3 class="font-headline font-bold text-sm text-slate-900 leading-snug line-clamp-2">
+              ${item.title}
+            </h3>
+            <p class="text-xs text-slate-500">
+              ${item.applicant_background} • ${item.job_category}
+            </p>
+            <div class="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+              <span>조회 ${Number(item.view_count).toLocaleString()} • 북마크 ${Number(item.bookmark_count).toLocaleString()}</span>
+              <span class="text-indigo-600 font-bold flex items-center gap-0.5">
+                로직 분석 보기
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              </span>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function filterPortfolios(cat, btn) {
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        c.className = 'filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50';
+      });
+      btn.className = 'filter-chip shrink-0 px-3.5 py-1.5 rounded-full bg-indigo-600 text-white shadow-sm';
+
+      if (cat === '전체') {
+        renderPortfolios(portfoliosCache);
+      } else {
+        const filtered = portfoliosCache.filter(p => 
+          (p.job_category && p.job_category.includes(cat)) || 
+          (p.applicant_background && p.applicant_background.includes(cat))
+        );
+        renderPortfolios(filtered);
+      }
+    }
+
+    function openPortfolio(id) {
+      currentPortfolioId = id;
+      loadPortfolioDetail(id);
+      switchView('viewer');
+    }
+
+    // ================= 포트폴리오 상세 및 슬라이드 탐색 =================
+    function loadPortfolioDetail(id) {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(onDetailLoaded)
+          .withFailureHandler(() => applyMockDetail(id))
+          .getPortfolioDetail(id);
+      } else {
+        applyMockDetail(id);
+      }
+    }
+
+    function onDetailLoaded(detail) {
+      if (!detail) return;
+      currentPortfolioDetail = detail;
+      currentPageIndex = 0;
+      updateViewerUI();
+    }
+
+    function applyMockDetail(id) {
+      currentPortfolioDetail = {
+        portfolio: {
+          id: id,
+          title: '비전공 문과의 토스 신입 PM 최종 합격 포트폴리오',
+          applicant_name: '김지원',
+          applicant_background: '경영학과 / 비전공 / 24 상반기 최종합격'
+        },
+        pages: [
+          {
+            page_number: 1,
+            title: '표지 & 프로젝트 개요',
+            problem_definition: '결제 전환 퍼널 내 진입 장벽 분해',
+            methodology: 'Double Diamond 기법',
+            outcome: '목표 KPI 설정: C-to-D 전환 15%p 향상'
+          },
+          {
+            page_number: 2,
+            title: '유저 리서치 및 VOC 분석',
+            problem_definition: '3중 인증 단계에서 유저 이탈 발생 확인',
+            methodology: '5 Whys 심층 인터뷰 8명',
+            outcome: '핵심 가설 수립 및 우선순위 도출'
+          },
+          {
+            page_number: 3,
+            title: '초기 진입 장벽 분석: 결제 전환 퍼널 내 68% 이탈 지점 발굴',
+            problem_definition: '단순 스크린샷 나열을 지양하고 정량적 메트릭 퍼널(Metric Funnel) 데이터를 선행 제시하여 문제의 심각성을 객관적으로 증명했습니다.',
+            methodology: 'Double Diamond와 5 Whys 기법을 결합하여 표면적 UI 불만이 아닌 백엔드 인증 지연 문제를 도출했습니다.',
+            outcome: 'A/B 테스트 배포 후 전환율 14.8% 개선 논리를 가설-실험-결과의 3단계 구조로 명료하게 증명했습니다.'
+          }
+        ]
+      };
+      currentPageIndex = 2; // 3번 장표 기본 포커스
+      updateViewerUI();
+    }
+
+    function updateViewerUI() {
+      if (!currentPortfolioDetail) return;
+      const p = currentPortfolioDetail.portfolio;
+      const pages = currentPortfolioDetail.pages || [];
+      const curPage = pages[currentPageIndex] || {};
+
+      document.getElementById('viewer-header-title').innerText = p.title || '포트폴리오';
+      document.getElementById('viewer-doc-title').innerText = p.title || '';
+      document.getElementById('viewer-applicant-meta').innerText = `${p.applicant_name || '합격자'} • ${p.applicant_background || ''}`;
+
+      const total = pages.length || 1;
+      const num = curPage.page_number || (currentPageIndex + 1);
+      document.getElementById('page-counter-badge').innerText = `${String(num).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+
+      document.getElementById('slide-stage-title').innerText = curPage.title || '장표 분석';
+      document.getElementById('insight-problem').innerText = curPage.problem_definition || '문제 정의 데이터가 없습니다.';
+      document.getElementById('insight-method').innerText = curPage.methodology || '적용 프레임워크 정보가 없습니다.';
+      document.getElementById('insight-outcome').innerText = curPage.outcome || '성과 지표 정보가 없습니다.';
+
+      // AI 멘토 라벨 동기화
+      document.getElementById('chat-active-page-label').innerText = `동기화 장표: Page ${String(num).padStart(2, '0')} (${curPage.title ? curPage.title.substring(0, 15) : ''}...)`;
+    }
+
+    function navigatePage(delta) {
+      if (!currentPortfolioDetail || !currentPortfolioDetail.pages) return;
+      const max = currentPortfolioDetail.pages.length - 1;
+      currentPageIndex = Math.max(0, Math.min(max, currentPageIndex + delta));
+      updateViewerUI();
+    }
+
+    function toggleLogicHighlight() {
+      isHighlightActive = !isHighlightActive;
+      const btn = document.getElementById('btn-logic-toggle');
+      const box1 = document.getElementById('target-highlight-box1');
+      const box2 = document.getElementById('target-highlight-box2');
+
+      if (isHighlightActive) {
+        btn.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold active:scale-95 transition';
+        btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">magic_button</span><span>로직 하이라이트 ON</span>';
+        if (box1) box1.style.opacity = '1';
+        if (box2) box2.style.opacity = '1';
+      } else {
+        btn.className = 'flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 text-xs font-bold active:scale-95 transition';
+        btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">visibility_off</span><span>하이라이트 OFF</span>';
+        if (box1) box1.style.opacity = '0.35';
+        if (box2) box2.style.opacity = '0.35';
+      }
+    }
+
+    function toggleSheet() {
+      isSheetOpen = !isSheetOpen;
+      const content = document.getElementById('sheet-content');
+      const arrow = document.getElementById('sheet-arrow');
+      if (isSheetOpen) {
+        content.classList.remove('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      } else {
+        content.classList.add('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      }
+    }
+
+    function toggleBookmark() {
+      alert('관심 포트폴리오로 저장되었습니다.');
+    }
+
+    // ================= AI 멘토 질의응답 & 가드레일 =================
+    function openChatFromCurrentPage() {
+      switchView('chat');
+    }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById('chat-input').value = promptText;
+      handleChatSubmit();
+    }
+
+    function resetChatHistory() {
+      if (confirm('대화 내용을 초기화하시겠습니까?')) {
+        document.getElementById('chat-stream').innerHTML = `
+          <div class="flex items-start gap-2 max-w-[90%]">
+            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">AI</div>
+            <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm text-xs text-slate-800 leading-relaxed">
+              대화 맥락이 초기화되었습니다. 현재 장표에 대해 질문해 주세요.
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function handleChatSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const question = (input.value || '').trim();
+      if (!question) return;
+
+      appendUserMessage(question);
+      input.value = '';
+
+      const sendBtn = document.getElementById('btn-chat-send');
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span>';
+
+      const curPageNum = (currentPageIndex + 1);
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">send</span>';
+            appendAiResponse(res.answer, res.isGuardrail);
+          })
+          .withFailureHandler(err => {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">send</span>';
+            appendAiResponse('오류가 발생했습니다: ' + err.toString(), false);
+          })
+          .askAiMentor(currentPortfolioId, curPageNum, question);
+      } else {
+        // 로컬 시뮬레이션
+        setTimeout(() => {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">send</span>';
+          if (question.match(/(주식|날씨|로또|테슬라|안녕)/)) {
+            appendAiResponse('죄송합니다. 포트폴리오와 관련된 질문에만 답변할 수 있습니다.', true);
+          } else {
+            appendAiResponse('좋은 질문입니다! 03페이지 기획 논리상 A/B 테스트 대신 정성 인터뷰를 선행한 이유는 초기 트래픽 모수 부족과 이탈의 본질적 심리 원인을 탐색하기 위함이었습니다.', false);
+          }
+        }, 600);
+      }
+    }
+
+    function appendUserMessage(msg) {
+      const stream = document.getElementById('chat-stream');
+      const div = document.createElement('div');
+      div.className = 'flex justify-end';
+      div.innerHTML = `
+        <div class="bg-indigo-600 text-white px-3.5 py-2.5 rounded-2xl rounded-tr-none text-xs leading-relaxed max-w-[85%] shadow-sm">
+          ${escapeHtml(msg)}
+        </div>
+      `;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function appendAiResponse(answer, isGuardrail) {
+      const stream = document.getElementById('chat-stream');
+      const div = document.createElement('div');
+
+      if (isGuardrail) {
+        // [엄격한 도메인 가드레일 경고 카드 렌더링]
+        div.className = 'flex items-start gap-2 max-w-[95%]';
+        div.innerHTML = `
+          <div class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[18px]">warning</span>
+          </div>
+          <div class="bg-rose-50 border border-rose-200 p-3.5 rounded-2xl rounded-tl-none shadow-sm flex flex-col gap-2">
+            <div class="flex items-center gap-1.5 text-rose-700 font-bold text-xs">
+              <span>도메인 가드레일 안내</span>
+            </div>
+            <p class="font-bold text-slate-900 text-xs bg-white p-2 rounded-lg border border-rose-100 text-center">
+              “죄송합니다. 포트폴리오와 관련된 질문에만 답변할 수 있습니다.”
+            </p>
+            <p class="text-[11px] text-slate-600 leading-relaxed">
+              FolioLogic AI 멘토는 합격 포트폴리오의 기획 의도, 장표 논리, 프레임워크 분석에 특화되어 있습니다.
+            </p>
+          </div>
+        `;
+      } else {
+        // 일반 AI 답변 렌더링
+        div.className = 'flex items-start gap-2 max-w-[90%]';
+        div.innerHTML = `
+          <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+            AI
+          </div>
+          <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm text-xs text-slate-800 leading-relaxed flex flex-col gap-1.5">
+            <span class="font-bold text-indigo-600 text-[11px]">FolioLogic 수석 멘토</span>
+            <div>${escapeHtml(answer).replace(/\\n/g, '<br/>')}</div>
+          </div>
+        `;
+      }
+
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // ================= 30초 AI 매칭 모달 인터랙션 =================
+    function openMatchingModal() {
+      document.getElementById('modal-matching').classList.remove('hidden');
+    }
+
+    function closeMatchingModal() {
+      document.getElementById('modal-matching').classList.add('hidden');
+    }
+
+    function selectOption(category, value, btn) {
+      matchSelection[category] = value;
+      const group = btn.parentElement;
+      group.querySelectorAll('.opt-btn').forEach(b => {
+        b.className = 'opt-btn py-2 rounded-lg bg-slate-100 text-slate-600';
+      });
+      btn.className = 'opt-btn py-2 rounded-lg bg-indigo-600 text-white font-bold';
+    }
+
+    function executeMatching() {
+      const btn = document.getElementById('btn-submit-match');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span><span>합격 로직 매칭 중...</span>';
+      
+      setTimeout(() => {
+        closeMatchingModal();
+        btn.innerHTML = '<span>나와 가장 유사한 합격작 3개 추천받기</span><span class="material-symbols-outlined text-[16px]">chevron_right</span>';
+        
+        // 필터링 적용 시연
+        filterPortfolios(matchSelection.job, document.querySelector('.filter-chip'));
+        alert(`[${matchSelection.job} / ${matchSelection.bg}] 조건에 맞는 최적의 합격 로직 3건을 추천했습니다.`);
+      }, 700);
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      initPortfolios();
+    });
+  </script>
+</body>
+</html>

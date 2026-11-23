@@ -1,0 +1,75 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: algorithm-511001
+  REGION: us-central1
+  SERVICE: foliologic-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Google Cloud Authentication
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy server/ to Cloud Run
+        id: deploy
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --source server \
+            --region "$REGION" \
+            --project "$PROJECT_ID" \
+            --allow-unauthenticated \
+            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},API_TOKEN=${{ secrets.API_TOKEN }}" \
+            --quiet
+
+          SERVICE_URL=$(gcloud run services describe "$SERVICE" --platform managed --region "$REGION" --project "$PROJECT_ID" --format "value(status.url)")
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+          echo "Service deployed at: $SERVICE_URL"
+
+      - name: Optional Sync URL to GAS Properties (gas-url-sync)
+        if: env.SERVICE_URL != ''
+        run: |
+          if [ -n "${{ secrets.GAS_WEBHOOK_URL }}" ]; then
+            echo "Registering Service URL to Google Apps Script Properties..."
+            curl -X POST -L \
+              -H "Content-Type: application/json" \
+              -d '{"serviceName": "'"$SERVICE"'", "serviceUrl": "'"$SERVICE_URL"'", "apiToken": "${{ secrets.API_TOKEN }}"}' \
+              "${{ secrets.GAS_WEBHOOK_URL }}"
+          else
+            echo "GAS_WEBHOOK_URL secret not set. Skipping webhook registration."
+          fi
+
+
+          SERVICE_URL=$(gcloud run services describe "$SERVICE" --platform managed --region "$REGION" --project "$PROJECT_ID" --format "value(status.url)")
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+          echo "Service deployed at: $SERVICE_URL"
+
+      - name: Optional Sync URL to GAS Properties (gas-url-sync)
+        if: env.SERVICE_URL != ''
+        run: |
+          if [ -n "${{ secrets.GAS_WEBHOOK_URL }}" ]; then
+            echo "Registering Service URL to Google Apps Script Properties..."
+            curl -X POST -L \
+              -H "Content-Type: application/json" \
+              -d '{"serviceName": "'"$SERVICE"'", "serviceUrl": "'"$SERVICE_URL"'", "apiToken": "${{ secrets.API_TOKEN }}"}' \
+              "${{ secrets.GAS_WEBHOOK_URL }}"
+          else
+            echo "GAS_WEBHOOK_URL secret not set. Skipping webhook registration."
+          fi
